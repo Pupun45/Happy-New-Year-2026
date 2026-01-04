@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1b2735">
+    <title>Happy New Year 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Arial Black', sans-serif;
+            overflow: hidden;
+            background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+            height: 100vh;
+            width: 100vw;
+            position: fixed;
+            touch-action: none;
+        }
+
+        #particleCanvas, #fireworkCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            perspective: 1000px;
+            width: 90%;
+            max-width: 800px;
+            pointer-events: none;
+        }
+
+        .greeting {
+            font-size: clamp(24px, 6vw, 42px);
+            color: #FFD700;
+            text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700, 0 0 30px #FFD700;
+            margin-bottom: clamp(15px, 3vh, 30px);
+            animation: float 3s ease-in-out infinite;
+            letter-spacing: 2px;
+        }
+
+        .year-container {
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        .year {
+            font-size: clamp(60px, 15vw, 140px);
+            font-weight: 900;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientShift 5s ease infinite, pulse3d 2s ease-in-out infinite;
+            text-shadow: 0 10px 30px rgba(255, 107, 107, 0.5);
+            position: relative;
+            display: inline-block;
+            transform-style: preserve-3d;
+            line-height: 1.2;
+        }
+
+        .year::before {
+            content: '2026';
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translateZ(-10px);
+            color: rgba(255, 107, 107, 0.3);
+            -webkit-text-stroke: 1px rgba(255, 107, 107, 0.5);
+        }
+
+        .year::after {
+            content: '2026';
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translateZ(-20px);
+            color: rgba(72, 219, 251, 0.2);
+            -webkit-text-stroke: 1px rgba(72, 219, 251, 0.3);
+        }
+
+        .message {
+            font-size: clamp(14px, 3.5vw, 22px);
+            color: #fff;
+            max-width: 100%;
+            margin: clamp(20px, 4vh, 40px) auto;
+            line-height: 1.6;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease-out 0.5s forwards;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+            padding: 0 10px;
+        }
+
+        .interactive-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: clamp(12px, 2vh, 20px);
+            align-items: center;
+            margin-top: clamp(20px, 4vh, 40px);
+            opacity: 0;
+            animation: fadeInUp 1.5s ease-out 1s forwards;
+            pointer-events: auto;
+            width: 100%;
+        }
+
+        .btn {
+            padding: clamp(12px, 2vh, 18px) clamp(30px, 8vw, 45px);
+            font-size: clamp(14px, 3vw, 18px);
+            font-weight: bold;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 280px;
+            touch-action: manipulation;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .btn-celebrate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+        }
+
+        .btn-fireworks {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: #fff;
+        }
+
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .custom-cursor {
+            display: none;
+        }
+
+        .cursor-follower {
+            display: none;
+        }
+
+        .stats {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: clamp(10px, 2vw, 14px);
+            z-index: 100;
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px 12px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+
+        .touch-indicator {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            animation: touchPulse 0.3s ease-out;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes touchPulse {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 0;
+            }
+        }
+
+        .mobile-hint {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: clamp(12px, 2.5vw, 16px);
+            z-index: 100;
+            text-align: center;
+            animation: fadeInOut 3s ease-in-out infinite;
+            padding: 0 20px;
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes pulse3d {
+            0%, 100% {
+                transform: scale(1) translateZ(0px);
+            }
+            50% {
+                transform: scale(1.05) translateZ(10px);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Desktop specific styles */
+        @media (min-width: 769px) {
+            body {
+                cursor: none;
+            }
+
+            .custom-cursor {
+                display: block;
+                position: fixed;
+                width: 20px;
+                height: 20px;
+                border: 2px solid #fff;
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                transition: all 0.1s ease;
+                box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            }
+
+            .cursor-follower {
+                display: block;
+                position: fixed;
+                width: 40px;
+                height: 40px;
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9998;
+                transition: all 0.3s ease;
+            }
+
+            .btn:hover {
+                transform: translateY(-5px) scale(1.05);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            }
+
+            .interactive-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
+
+            .btn {
+                width: auto;
+            }
+
+            .mobile-hint {
+                display: none;
+            }
+        }
+
+        /* Tablet adjustments */
+        @media (min-width: 481px) and (max-width: 768px) {
+            .year::before,
+            .year::after {
+                display: none;
+            }
+        }
+
+        /* Small mobile adjustments */
+        @media (max-width: 480px) {
+            .year::before,
+            .year::after {
+                display: none;
+            }
+
+            .stats {
+                font-size: 10px;
+                padding: 6px 8px;
+                bottom: 5px;
+                left: 5px;
+            }
+
+            .interactive-buttons {
+                gap: 10px;
+                margin-top: 20px;
+            }
+
+            .btn {
+                width: 95%;
+            }
+        }
+
+        /* Landscape mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .content {
+                top: 40%;
+            }
+
+            .greeting {
+                margin-bottom: 10px;
+            }
+
+            .message {
+                margin: 15px auto;
+                font-size: 14px;
+            }
+
+            .interactive-buttons {
+                flex-direction: row;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .btn {
+                width: auto;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .mobile-hint {
+                bottom: 10px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="particleCanvas"></canvas>
+    <canvas id="fireworkCanvas"></canvas>
+    
+    <div class="custom-cursor"></div>
+    <div class="cursor-follower"></div>
+
+    <div class="content">
+        <div class="greeting">🎊 Happy New Year 🎊</div>
+        <div class="year-container">
+            <div class="year">2026</div>
+        </div>
+        <div class="message">
+            May this year bring you endless joy, amazing adventures, and dreams that come true. 
+            Let's make 2026 unforgettable! ✨
+        </div>
+        <div class="interactive-buttons">
+            <button class="btn btn-celebrate" id="celebrateBtn">
+                 Mega Celebration
+            </button>
+            <button class="btn btn-fireworks" id="fireworksBtn">
+                 Firework Show
+            </button>
+        </div>
+    </div>
+
+
+    <div class="stats">
+        <div>Particles: <span id="particleCount">0</span></div>
+        <div>Fireworks: <span id="fireworkCount">0</span></div>
+        <div>FPS: <span id="fps">60</span></div>
+    </div>
+
+    <script>
+        // Detect mobile device
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+        // Canvas Setup
+        const particleCanvas = document.getElementById('particleCanvas');
+        const particleCtx = particleCanvas.getContext('2d');
+        const fireworkCanvas = document.getElementById('fireworkCanvas');
+        const fireworkCtx = fireworkCanvas.getContext('2d');
+
+        function resizeCanvas() {
+            particleCanvas.width = fireworkCanvas.width = window.innerWidth;
+            particleCanvas.height = fireworkCanvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+
+        // Custom Cursor (Desktop only)
+        const cursor = document.querySelector('.custom-cursor');
+        const cursorFollower = document.querySelector('.cursor-follower');
+        let mouseX = 0, mouseY = 0;
+        let followerX = 0, followerY = 0;
+
+        if (!isMobile) {
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                cursor.style.left = mouseX - 10 + 'px';
+                cursor.style.top = mouseY - 10 + 'px';
+            });
+
+            function animateCursorFollower() {
+                followerX += (mouseX - followerX) * 0.1;
+                followerY += (mouseY - followerY) * 0.1;
+                cursorFollower.style.left = followerX - 20 + 'px';
+                cursorFollower.style.top = followerY - 20 + 'px';
+                requestAnimationFrame(animateCursorFollower);
+            }
+            animateCursorFollower();
+        }
+
+        // Touch Indicator
+        function createTouchIndicator(x, y) {
+            const indicator = document.createElement('div');
+            indicator.className = 'touch-indicator';
+            indicator.style.left = (x - 15) + 'px';
+            indicator.style.top = (y - 15) + 'px';
+            document.body.appendChild(indicator);
+            setTimeout(() => indicator.remove(), 300);
+        }
+
+        // Particle System
+        class Particle {
+            constructor(x, y, speedX, speedY, size, color) {
+                this.x = x || Math.random() * particleCanvas.width;
+                this.y = y || Math.random() * particleCanvas.height;
+                this.speedX = speedX || (Math.random() - 0.5) * (isMobile ? 1.5 : 2);
+                this.speedY = speedY || (Math.random() - 0.5) * (isMobile ? 1.5 : 2);
+                this.size = size || Math.random() * (isMobile ? 2 : 3) + 1;
+                this.color = color || `hsl(${Math.random() * 360}, 100%, 70%)`;
+                this.life = 1;
+                this.decay = Math.random() * 0.01 + (isMobile ? 0.008 : 0.005);
+            }
+
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+                this.size = Math.max(0, this.size - 0.05);
+
+                if (this.x < 0 || this.x > particleCanvas.width) this.speedX *= -1;
+                if (this.y < 0 || this.y > particleCanvas.height) this.speedY *= -1;
+            }
+
+            draw() {
+                particleCtx.save();
+                particleCtx.globalAlpha = this.life;
+                particleCtx.fillStyle = this.color;
+                particleCtx.beginPath();
+                particleCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                particleCtx.fill();
+                particleCtx.restore();
+            }
+        }
+
+        // Mouse/Touch Trail Particles
+        const mouseTrail = [];
+        let lastTrailTime = 0;
+        const trailDelay = isMobile ? 50 : 30;
+
+        function addTrailParticle(x, y) {
+            const now = Date.now();
+            if (now - lastTrailTime > trailDelay) {
+                const particleCount = isMobile ? 2 : 3;
+                for (let i = 0; i < particleCount; i++) {
+                    mouseTrail.push(new Particle(
+                        x, y,
+                        (Math.random() - 0.5) * 3,
+                        (Math.random() - 0.5) * 3,
+                        Math.random() * 4 + 2,
+                        `hsl(${Math.random() * 60 + 180}, 100%, 70%)`
+                    ));
+                }
+                lastTrailTime = now;
+            }
+        }
+
+        // Touch Events [web:41][web:45][web:48]
+        if (isTouch) {
+            fireworkCanvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                Array.from(e.touches).forEach(touch => {
+                    const x = touch.clientX;
+                    const y = touch.clientY;
+                    createTouchIndicator(x, y);
+                    fireworks.push(new Firework(x, y));
+                    addTrailParticle(x, y);
+                });
+            }, { passive: false });
+
+            fireworkCanvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                Array.from(e.touches).forEach(touch => {
+                    addTrailParticle(touch.clientX, touch.clientY);
+                });
+            }, { passive: false });
+
+            fireworkCanvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+        } else {
+            // Mouse Events
+            document.addEventListener('mousemove', (e) => {
+                addTrailParticle(e.clientX, e.clientY);
+            });
+
+            fireworkCanvas.addEventListener('click', (e) => {
+                fireworks.push(new Firework(e.clientX, e.clientY));
+            });
+        }
+
+        // Firework System
+        class Firework {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.particles = [];
+                this.colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#ffa07a', '#98d8c8', '#ffd93d', '#6c5ce7'];
+                
+                const particleCount = isMobile ? 50 : 80;
+                for (let i = 0; i < particleCount; i++) {
+                    const angle = (Math.PI * 2 * i) / particleCount;
+                    const speed = Math.random() * (isMobile ? 4 : 6) + (isMobile ? 2 : 3);
+                    const color = this.colors[Math.floor(Math.random() * this.colors.length)];
+                    
+                    this.particles.push({
+                        x: this.x,
+                        y: this.y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        life: 1,
+                        color: color,
+                        size: Math.random() * (isMobile ? 2 : 3) + (isMobile ? 1 : 2)
+                    });
+                }
+            }
+
+            update() {
+                this.particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.1;
+                    p.life -= isMobile ? 0.015 : 0.01;
+                    p.size *= 0.98;
+                });
+                
+                this.particles = this.particles.filter(p => p.life > 0);
+            }
+
+            draw() {
+                this.particles.forEach(p => {
+                    fireworkCtx.save();
+                    fireworkCtx.globalAlpha = p.life;
+                    fireworkCtx.fillStyle = p.color;
+                    if (!isMobile) {
+                        fireworkCtx.shadowBlur = 15;
+                        fireworkCtx.shadowColor = p.color;
+                    }
+                    fireworkCtx.beginPath();
+                    fireworkCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    fireworkCtx.fill();
+                    fireworkCtx.restore();
+                });
+            }
+        }
+
+        let particles = [];
+        let fireworks = [];
+        let particlesEnabled = true;
+        let frameCount = 0;
+        let lastTime = performance.now();
+
+        // Initialize particles (fewer on mobile) [web:46]
+        const initialParticleCount = isMobile ? 50 : 100;
+        for (let i = 0; i < initialParticleCount; i++) {
+            particles.push(new Particle());
+        }
+
+        // Auto fireworks (less frequent on mobile)
+        const autoFireworkInterval = isMobile ? 3000 : 2000;
+        setInterval(() => {
+            const x = Math.random() * fireworkCanvas.width;
+            const y = Math.random() * fireworkCanvas.height * 0.6;
+            fireworks.push(new Firework(x, y));
+        }, autoFireworkInterval);
+
+        // Animation Loop [web:46][web:58]
+        function animate() {
+            particleCtx.fillStyle = 'rgba(27, 39, 53, 0.1)';
+            particleCtx.fillRect(0, 0, particleCanvas.width, particleCanvas.height);
+            
+            fireworkCtx.fillStyle = 'rgba(27, 39, 53, 0.2)';
+            fireworkCtx.fillRect(0, 0, fireworkCanvas.width, fireworkCanvas.height);
+
+            // Update and draw particles
+            if (particlesEnabled) {
+                particles.forEach((p, index) => {
+                    p.update();
+                    p.draw();
+                    if (p.life <= 0 || p.size <= 0) {
+                        particles.splice(index, 1);
+                        particles.push(new Particle());
+                    }
+                });
+            }
+
+            // Mouse/Touch trail
+            mouseTrail.forEach((p, index) => {
+                p.update();
+                p.draw();
+                if (p.life <= 0) {
+                    mouseTrail.splice(index, 1);
+                }
+            });
+
+            // Update and draw fireworks
+            fireworks.forEach((f, index) => {
+                f.update();
+                f.draw();
+                if (f.particles.length === 0) {
+                    fireworks.splice(index, 1);
+                }
+            });
+
+            // Update stats
+            document.getElementById('particleCount').textContent = particles.length + mouseTrail.length;
+            document.getElementById('fireworkCount').textContent = fireworks.length;
+            
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime - lastTime >= 1000) {
+                document.getElementById('fps').textContent = frameCount;
+                frameCount = 0;
+                lastTime = currentTime;
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+
+        // Button Event Listeners
+        document.getElementById('celebrateBtn').addEventListener('click', function() {
+            const count = isMobile ? 100 : 200;
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    particles.push(new Particle(
+                        Math.random() * particleCanvas.width,
+                        particleCanvas.height,
+                        (Math.random() - 0.5) * 10,
+                        -Math.random() * 15 - 5,
+                        Math.random() * 5 + 2
+                    ));
+                }, i * 10);
+            }
+
+            const fireworkCount = isMobile ? 5 : 8;
+            for (let i = 0; i < fireworkCount; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * fireworkCanvas.width;
+                    const y = Math.random() * fireworkCanvas.height * 0.5;
+                    fireworks.push(new Firework(x, y));
+                }, i * 300);
+            }
+        });
+
+        document.getElementById('fireworksBtn').addEventListener('click', function() {
+            const count = isMobile ? 10 : 15;
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const x = (fireworkCanvas.width / (count + 1)) * (i + 1);
+                    const y = Math.random() * fireworkCanvas.height * 0.4 + fireworkCanvas.height * 0.1;
+                    fireworks.push(new Firework(x, y));
+                }, i * 200);
+            }
+        });
+
+
+        // Resize handler [web:46]
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                resizeCanvas();
+            }, 250);
+        });
+
+        // Prevent default touch behaviors [web:48]
+        document.body.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+        }, { passive: false });
+
+        // Prevent context menu on long press [web:48]
+        document.addEventListener('contextmenu', (e) => {
+            if (isTouch) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
