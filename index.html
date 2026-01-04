@@ -148,7 +148,6 @@
             color: #fff;
         }
 
-
         .btn:active {
             transform: scale(0.95);
         }
@@ -177,20 +176,6 @@
 
         .cursor-follower {
             display: none;
-        }
-
-        .stats {
-            position: fixed;
-            bottom:-20px;
-            left: -10px;
-            color: rgba(255, 255, 255, 0.6);
-            font-size: clamp(10px, 2vw, 14px);
-            z-index: 100;
-            font-family: 'Courier New', monospace;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 12px;
-            border-radius: 8px;
-            backdrop-filter: blur(5px);
         }
 
         .touch-indicator {
@@ -269,7 +254,6 @@
             }
         }
 
-        /* Desktop specific styles */
         @media (min-width: 769px) {
             body {
                 cursor: none;
@@ -319,7 +303,6 @@
             }
         }
 
-        /* Tablet adjustments */
         @media (min-width: 481px) and (max-width: 768px) {
             .year::before,
             .year::after {
@@ -327,18 +310,10 @@
             }
         }
 
-        /* Small mobile adjustments */
         @media (max-width: 480px) {
             .year::before,
             .year::after {
                 display: none;
-            }
-
-            .stats {
-                font-size: 10px;
-                padding: 6px 8px;
-                bottom: 5px;
-                left: 5px;
             }
 
             .interactive-buttons {
@@ -351,7 +326,6 @@
             }
         }
 
-        /* Landscape mobile */
         @media (max-height: 500px) and (orientation: landscape) {
             .content {
                 top: 40%;
@@ -409,20 +383,12 @@
                  Firework Show
             </button>
         </div>
-
-<div class="stats">
-        <div>Particles: <span id="particleCount">0</span></div>
-        <div>Fireworks: <span id="fireworkCount">0</span></div>
-        <div>FPS: <span id="fps">60</span></div>
-</div>
-
+    </div>
 
     <script>
-        // Detect mobile device
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
-        // Canvas Setup
         const particleCanvas = document.getElementById('particleCanvas');
         const particleCtx = particleCanvas.getContext('2d');
         const fireworkCanvas = document.getElementById('fireworkCanvas');
@@ -434,7 +400,6 @@
         }
         resizeCanvas();
 
-        // Custom Cursor (Desktop only)
         const cursor = document.querySelector('.custom-cursor');
         const cursorFollower = document.querySelector('.cursor-follower');
         let mouseX = 0, mouseY = 0;
@@ -458,7 +423,6 @@
             animateCursorFollower();
         }
 
-        // Touch Indicator
         function createTouchIndicator(x, y) {
             const indicator = document.createElement('div');
             indicator.className = 'touch-indicator';
@@ -468,7 +432,6 @@
             setTimeout(() => indicator.remove(), 300);
         }
 
-        // Particle System
         class Particle {
             constructor(x, y, speedX, speedY, size, color) {
                 this.x = x || Math.random() * particleCanvas.width;
@@ -502,7 +465,6 @@
             }
         }
 
-        // Mouse/Touch Trail Particles
         const mouseTrail = [];
         let lastTrailTime = 0;
         const trailDelay = isMobile ? 50 : 30;
@@ -524,41 +486,6 @@
             }
         }
 
-        // Touch Events [web:41][web:45][web:48]
-        if (isTouch) {
-            fireworkCanvas.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                Array.from(e.touches).forEach(touch => {
-                    const x = touch.clientX;
-                    const y = touch.clientY;
-                    createTouchIndicator(x, y);
-                    fireworks.push(new Firework(x, y));
-                    addTrailParticle(x, y);
-                });
-            }, { passive: false });
-
-            fireworkCanvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                Array.from(e.touches).forEach(touch => {
-                    addTrailParticle(touch.clientX, touch.clientY);
-                });
-            }, { passive: false });
-
-            fireworkCanvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-            }, { passive: false });
-        } else {
-            // Mouse Events
-            document.addEventListener('mousemove', (e) => {
-                addTrailParticle(e.clientX, e.clientY);
-            });
-
-            fireworkCanvas.addEventListener('click', (e) => {
-                fireworks.push(new Firework(e.clientX, e.clientY));
-            });
-        }
-
-        // Firework System
         class Firework {
             constructor(x, y) {
                 this.x = x;
@@ -616,16 +543,12 @@
         let particles = [];
         let fireworks = [];
         let particlesEnabled = true;
-        let frameCount = 0;
-        let lastTime = performance.now();
 
-        // Initialize particles (fewer on mobile) [web:46]
         const initialParticleCount = isMobile ? 50 : 100;
         for (let i = 0; i < initialParticleCount; i++) {
             particles.push(new Particle());
         }
 
-        // Auto fireworks (less frequent on mobile)
         const autoFireworkInterval = isMobile ? 3000 : 2000;
         setInterval(() => {
             const x = Math.random() * fireworkCanvas.width;
@@ -633,7 +556,38 @@
             fireworks.push(new Firework(x, y));
         }, autoFireworkInterval);
 
-        // Animation Loop [web:46][web:58]
+        if (isTouch) {
+            fireworkCanvas.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                Array.from(e.touches).forEach(touch => {
+                    const x = touch.clientX;
+                    const y = touch.clientY;
+                    createTouchIndicator(x, y);
+                    fireworks.push(new Firework(x, y));
+                    addTrailParticle(x, y);
+                });
+            }, { passive: false });
+
+            fireworkCanvas.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                Array.from(e.touches).forEach(touch => {
+                    addTrailParticle(touch.clientX, touch.clientY);
+                });
+            }, { passive: false });
+
+            fireworkCanvas.addEventListener('touchend', (e) => {
+                e.preventDefault();
+            }, { passive: false });
+        } else {
+            document.addEventListener('mousemove', (e) => {
+                addTrailParticle(e.clientX, e.clientY);
+            });
+
+            fireworkCanvas.addEventListener('click', (e) => {
+                fireworks.push(new Firework(e.clientX, e.clientY));
+            });
+        }
+
         function animate() {
             particleCtx.fillStyle = 'rgba(27, 39, 53, 0.1)';
             particleCtx.fillRect(0, 0, particleCanvas.width, particleCanvas.height);
@@ -641,7 +595,6 @@
             fireworkCtx.fillStyle = 'rgba(27, 39, 53, 0.2)';
             fireworkCtx.fillRect(0, 0, fireworkCanvas.width, fireworkCanvas.height);
 
-            // Update and draw particles
             if (particlesEnabled) {
                 particles.forEach((p, index) => {
                     p.update();
@@ -653,7 +606,6 @@
                 });
             }
 
-            // Mouse/Touch trail
             mouseTrail.forEach((p, index) => {
                 p.update();
                 p.draw();
@@ -662,7 +614,6 @@
                 }
             });
 
-            // Update and draw fireworks
             fireworks.forEach((f, index) => {
                 f.update();
                 f.draw();
@@ -671,24 +622,11 @@
                 }
             });
 
-            // Update stats
-            document.getElementById('particleCount').textContent = particles.length + mouseTrail.length;
-            document.getElementById('fireworkCount').textContent = fireworks.length;
-            
-            frameCount++;
-            const currentTime = performance.now();
-            if (currentTime - lastTime >= 1000) {
-                document.getElementById('fps').textContent = frameCount;
-                frameCount = 0;
-                lastTime = currentTime;
-            }
-
             requestAnimationFrame(animate);
         }
 
         animate();
 
-        // Button Event Listeners
         document.getElementById('celebrateBtn').addEventListener('click', function() {
             const count = isMobile ? 100 : 200;
             for (let i = 0; i < count; i++) {
@@ -724,8 +662,6 @@
             }
         });
 
-
-        // Resize handler [web:46]
         let resizeTimeout;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimeout);
@@ -734,12 +670,10 @@
             }, 250);
         });
 
-        // Prevent default touch behaviors [web:48]
         document.body.addEventListener('touchmove', (e) => {
             e.preventDefault();
         }, { passive: false });
 
-        // Prevent context menu on long press [web:48]
         document.addEventListener('contextmenu', (e) => {
             if (isTouch) {
                 e.preventDefault();
